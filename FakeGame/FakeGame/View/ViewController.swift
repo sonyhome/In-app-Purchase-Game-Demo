@@ -86,21 +86,31 @@ class ViewController: UIViewController {
     // MARK: - Methods To Implement
     
     func showAlert(for product: SKProduct) {
+        // Get the price from the App Store
         guard let price = IAPManager.shared.getPriceFormatted(for: product) else { return }
         
+        // Create alert controller window and display it
         let alertController = UIAlertController(title: product.localizedTitle,
                                                 message: product.localizedDescription,
                                                 preferredStyle: .alert)
         
-        alertController.addAction(UIAlertAction(title: "Buy now for \(price)", style: .default, handler: { (_) in
+        // Add a buy button
+        alertController.addAction(UIAlertAction(
+            title: "Buy now for \(price)",
+            style: .default,
+            handler: { (_) in
             
+            // Trigger the purchase if the action button is pressed
             if !self.viewModel.purchase(product: product) {
                 self.showSingleAlert(withMessage: "In-App Purchases are not allowed in this device.")
             }
             
         }))
         
+        // Add a cancel button
         alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        // Show the buy alert window
         self.present(alertController, animated: true, completion: nil)
     }
 }
@@ -225,17 +235,24 @@ extension ViewController: UITableViewDataSource {
 }
 
 
-// MARK: - UITableViewDelegate
+// @brief handles the UI product table clicks
 extension ViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(
+        _ tableView: UITableView,
+        didSelectRowAt indexPath: IndexPath)
+    {
         tableView.deselectRow(at: indexPath, animated: true)
         
-        if indexPath.row == 0 && viewModel.availableExtraLives == 0 || indexPath.row == 1 && viewModel.availableSuperPowers == 0 || indexPath.row == 2 {
-            guard let product = viewModel.getProductForItem(at: indexPath.row) else {
+        if indexPath.row == 0 &&
+            viewModel.availableExtraLives == 0 || indexPath.row == 1 &&
+            viewModel.availableSuperPowers == 0 || indexPath.row == 2
+        {
+            guard let product : SKProduct = viewModel.getProductForItem(at: indexPath.row)
+            else {
                 showSingleAlert(withMessage: "Renewing this item is not possible at the moment.")
                 return
             }
-            
+            // Show an alert to purchase the product
             showAlert(for: product)
         
         } else {

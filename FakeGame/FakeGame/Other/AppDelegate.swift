@@ -15,6 +15,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        // Observe the payment queue to detect purchases
         IAPManager.shared.startObserving()
         return true
     }
@@ -35,6 +37,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     
     func applicationWillTerminate(_ application: UIApplication) {
+        // Stop observing the payment queue to detect purchases on app exit
         IAPManager.shared.stopObserving()
     }
 
