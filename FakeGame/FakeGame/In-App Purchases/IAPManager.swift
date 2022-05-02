@@ -3,6 +3,7 @@
 //  Copyright © 2019 Appcoda. All rights reserved.
 //  https://www.appcoda.com/in-app-purchases-guide/
 //  MIT License
+// Modified into the morIap module by Dan Truong
 
 // //    Usage pattern of IAPManager to get the product list from the UI:
 // func viewDidSetup() {
@@ -51,6 +52,9 @@ class IAPManager: NSObject {
     }
 
     /// /// GET PRODUCT LIST ///
+
+    var products = [SKProduct]()
+
     // @brief Properties
     // Escaped handler (closure) that processes product list received from the App Store
     var onReceiveProductsHandler: ((Result<[SKProduct], IAPManagerError>) -> Void)?
@@ -90,7 +94,9 @@ class IAPManager: NSObject {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.locale = product.priceLocale
-        return formatter.string(from: product.price)
+        let price = formatter.string(from: product.price)
+        print("DEBUG IAP getPriceFormatted() => \(price)")
+        return price
     }
     
     // @brief
@@ -116,10 +122,12 @@ class IAPManager: NSObject {
         // Get the product identifiers from the plist file.
         guard let productIDs : [String] = getProductIDs()
         else {
+            print("DEBUG IAP getProducts() => error")
             // the array is nil
             productsReceiveHandler(.failure(.noProductIDsFound))
             return
         }
+        print("DEBUG IAP getProducts() => \(productIDs)")
 
         let productIDsSet : Set<String> = Set(productIDs)
         
@@ -129,11 +137,19 @@ class IAPManager: NSObject {
         let request = SKProductsRequest(productIdentifiers: productIDsSet)
         request.delegate = self
 
-        // Query assynchronously the App Store for the product list.
+        // Query asynchronously the App Store for the product list.
         request.start()
     } // func getProducts
     
-    
+    func debugPrintProduct(_ product: SKProduct)
+    {
+        print("+++ DEBUG IAP SKPRODUCT +++")
+        print("  title: \(product.localizedTitle)")
+        print("  desc:  \(product.localizedDescription)")
+        print("  price: \(product.price) \(product.priceLocale)")
+        print("  id:    \(product.productIdentifier)")
+        print("  period:\(product.subscriptionPeriod!)")
+    }
     /// /// PURCHASE PRODUCT ///
     // A purchase is a SKPaymentTransaction transaction managed by a SKPaymentQueue
     // which communicates with the App Store and handles the payment process. A built-in
@@ -149,14 +165,17 @@ class IAPManager: NSObject {
     // Must be called early enough in the app (for ex in AppDelegate.application())
     // and close at the end (in AppDelegate.applicationWillTerminate())
     func startObserving() {
+        print("DEBUG IAP startObserving()")
         SKPaymentQueue.default().add(self)
     }
     func stopObserving() {
+        print("DEBUG IAP stopObserving()")
         SKPaymentQueue.default().remove(self)
     }
     
     // Check in-app purchases are enabled for the current user
     func canMakePayments() -> Bool {
+        print("DEBUG IAP canMakePayments()")
         return SKPaymentQueue.canMakePayments()
     }
 
@@ -178,6 +197,7 @@ class IAPManager: NSObject {
         product: SKProduct,
         withHandler closure: @escaping ((_ result: Result<Bool, Error>) -> Void)
     ) {
+        print("DEBUG IAP buy(\(product))")
         let payment = SKPayment(product: product)
         SKPaymentQueue.default().add(payment)
 
@@ -185,6 +205,7 @@ class IAPManager: NSObject {
         onBuyProductHandler = closure
     }
     
+    // Check store for previous purchases to restore them
     // /// USAGE: ///
     //func restorePurchases() {
     //    delegate?.willStartLongProcess()
@@ -194,6 +215,7 @@ class IAPManager: NSObject {
     //            switch result {...
     //}   }   }   }
     func restorePurchases(withHandler handler: @escaping ((_ result: Result<Bool, Error>) -> Void)) {
+        print("DEBUG IAP restorePurchases()")
         onBuyProductHandler = handler
         totalRestoredPurchases = 0
         SKPaymentQueue.default().restoreCompletedTransactions()

@@ -249,6 +249,7 @@ extension ViewController: UITableViewDelegate {
         {
             guard let product : SKProduct = viewModel.getProductForItem(at: indexPath.row)
             else {
+                print("ERROR!!!!")
                 showSingleAlert(withMessage: "Renewing this item is not possible at the moment.")
                 return
             }

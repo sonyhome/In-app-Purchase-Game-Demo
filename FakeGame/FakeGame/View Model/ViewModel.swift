@@ -87,14 +87,14 @@ class ViewModel {
         let keyword: String
         
         switch index {
-        case 0: keyword = "extra_lives"
-        case 1: keyword = "superpowers"
-        case 2: keyword = "unlock_maps"
+        case 0: keyword = "4b9612cf0fd942ad9bdd4c290f33fe76"
+        case 1: keyword = "4b9612cf0fd942ad9bdd4c290f33fe77"
+        case 2: keyword = "4b9612cf0fd942ad9bdd4c290f33fe78"
         default: keyword = ""
         }
-        
         // Check if there is a product fetched from App Store containing
         // the keyword matching to the selected item's index.
+        print("ViewModel DEBUG getProductForItem(\(index) = \(keyword))")
         guard let product = model.getProduct(containing: keyword) else { return nil }
         return product
     }
@@ -121,10 +121,15 @@ class ViewModel {
         IAPManager.shared.getProducts { (result) in
             DispatchQueue.main.async {
                 self.delegate?.didFinishLongProcess()
-                
                 switch result {
-                    case .success(let products): self.model.products = products
-                    case .failure(let error): self.delegate?.showIAPRelatedError(error)
+                    case .success(let products):
+                        print("ViewModel DEBUG viewDidSetup() getProducts() closure => \(products)")
+                    IAPManager.shared.debugPrintProduct(products[0])
+                    IAPManager.shared.debugPrintProduct(products[1])
+                    self.model.products = products
+                    case .failure(let error):
+                    print("ViewModel DEBUG viewDidSetup() getProducts() closure => error")
+                        self.delegate?.showIAPRelatedError(error)
                 }
             }
         }
